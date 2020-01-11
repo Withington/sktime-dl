@@ -34,7 +34,7 @@ install:
     - conda install -n testenv --yes pip numpy=$NUMPY_VERSION cython nose pytest pytest-cov sphinx jupyter
     - pip install sphinx_rtd_theme
     - pip install nbsphinx
-    - pip install scikit-learn
+    - pip install scikit-learn==$SKLEARN_VERSION
 
     # install keras contrib manually as currently not available on pypi
     - pip install git+https://github.com/keras-team/keras-contrib.git@master
