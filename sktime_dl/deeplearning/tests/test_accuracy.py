@@ -5,11 +5,15 @@ Test that accuracy is higher than the published accuracy minus two
 standard deviations (also published) on the ItalyPowerDemand dataset.
 '''
 
+import os
+from pathlib import Path
 import pytest
 from flaky import flaky
 import numpy as np
+import pandas as pd
 
-from sktime.datasets import load_italy_power_demand 
+from sktime.datasets import load_italy_power_demand
+from sktime.utils.load_data import load_from_tsfile_to_dataframe
 
 from sktime_dl.deeplearning import CNNClassifier
 from sktime_dl.deeplearning import EncoderClassifier
@@ -74,6 +78,27 @@ def test_mcnn_accuracy():
     # Low accuracy is consistent with published results
     # https://github.com/hfawaz/dl-4-tsc/blob/master/README.md
     accuracy_test(network=MCNNClassifier(), lower=0.5-2*0.002, upper=0.5+2*0.002)
+
+
+@pytest.mark.skip(reason="Requires Wafer dataset. Very slow running.")
+@pytest.mark.slow
+@flaky(max_runs=3, rerun_filter=is_not_value_error)
+def test_mcnn_wafer_accuracy(): 
+    module = os.path.dirname(__file__)
+    file_location = Path(module) / '../../../datasets/data/Wafer/Wafer_TRAIN.ts'
+    X_train, y_train = load_from_tsfile_to_dataframe(file_location)
+    file_location = Path(module) / '../../../datasets/data/Wafer/Wafer_TEST.ts'
+    X_test, y_test = load_from_tsfile_to_dataframe(file_location)
+
+    network=MCNNClassifier()
+    __ = network.fit(X_train, y_train)
+
+    accuracy = network.score(X_test, y_test)
+    print(network.__class__.__name__, "accuracy:", accuracy)
+
+    lower = 0.913-2*0.044
+    upper = 1.0
+    assert(accuracy>lower and accuracy<=upper)
 
 
 @pytest.mark.slow
